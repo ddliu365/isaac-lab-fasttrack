@@ -23,6 +23,10 @@ cp docker/.env.example docker/.env
 ./scripts/smoke.sh              # ~5 min, prints PASS
 ```
 
+## Support
+Email ddliu@hotmail.com with the output of `./scripts/preflight.sh` and the last 60 lines of the failing command.
+Reply within 48 h; if the smoke test cannot pass on hardware that meets the stated minimum within 7 days, full refund.
+
 ## Versions (do not mix)
 | Component     | Pin                       |
 |---------------|---------------------------|
