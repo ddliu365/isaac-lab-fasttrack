@@ -1,0 +1,6 @@
+docker/.env
+*.tgz
+*.zip
+dist/
+__pycache__/
+scripts/windows/

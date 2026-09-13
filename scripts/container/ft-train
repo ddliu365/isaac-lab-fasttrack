@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# ft-train <task> [preset] : picks num_envs from VRAM preset. Presets: 8g 12g 16g 24g auto
+set -euo pipefail
+TASK="${1:?usage: ft-train <task> [8g|12g|16g|24g|auto]}"; PRESET="${2:-auto}"
+if [ "$PRESET" = auto ]; then
+  VRAM=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -1)
+  if   [ "$VRAM" -ge 22000 ]; then PRESET=24g
+  elif [ "$VRAM" -ge 15000 ]; then PRESET=16g
+  elif [ "$VRAM" -ge 11000 ]; then PRESET=12g
+  else PRESET=8g; fi
+fi
+# Measured on RTX 3060 12G (docs/low_vram.md). "Heavy" = rough terrain, drawers/cabinets, lifting/stacking, cameras.
+if echo "$TASK $*" | grep -qiE "Rough|Drawer|Cabinet|Lift|Stack|Camera|RGB|Depth|enable_cameras"; then HEAVY=1; else HEAVY=0; fi
+case $PRESET in
+  8g)  [ $HEAVY = 1 ] && N=2048 || N=4096;;
+  12g|16g|24g) N=4096;;
+  *) N=2048;;
+esac
+if echo "$TASK $*" | grep -qiE "Camera|RGB|Depth|enable_cameras"; then case $PRESET in 8g) N=32;; 12g) N=64;; 16g) N=128;; *) N=256;; esac; fi
+echo "preset=$PRESET num_envs=$N"
+cd "${ISAACLAB_PATH}"
+exec ./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task "$TASK" --headless --num_envs "$N" "${@:3}"

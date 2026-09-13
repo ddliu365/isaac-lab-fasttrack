@@ -1,0 +1,39 @@
+services:
+  isaaclab:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        ISAACLAB_VERSION: ${ISAACLAB_VERSION:-2.3.2}
+    image: isaac-lab-fasttrack:${ISAACLAB_VERSION:-2.3.2}
+    container_name: isaaclab-fasttrack
+    network_mode: host
+    ipc: host
+    stdin_open: true
+    tty: true
+    environment:
+      - ACCEPT_EULA=Y
+      - PRIVACY_CONSENT=Y
+      - LIVESTREAM=${LIVESTREAM:-0}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      # Persistent caches: kit, ov, pip, glcache, computecache, logs, data, docs
+      - ${CACHE_ROOT:-~/.isaac-fasttrack}/cache/kit:/isaac-sim/kit/cache:rw
+      - ${CACHE_ROOT:-~/.isaac-fasttrack}/cache/ov:/root/.cache/ov:rw
+      - ${CACHE_ROOT:-~/.isaac-fasttrack}/cache/pip:/root/.cache/pip:rw
+      - ${CACHE_ROOT:-~/.isaac-fasttrack}/cache/glcache:/root/.cache/nvidia/GLCache:rw
+      - ${CACHE_ROOT:-~/.isaac-fasttrack}/cache/computecache:/root/.nv/ComputeCache:rw
+      - ${CACHE_ROOT:-~/.isaac-fasttrack}/logs:/root/.nvidia-omniverse/logs:rw
+      - ${CACHE_ROOT:-~/.isaac-fasttrack}/data:/root/.local/share/ov/data:rw
+      - ${CACHE_ROOT:-~/.isaac-fasttrack}/documents:/root/Documents:rw
+      # Your code
+      - ${WORKSPACE:-~/isaac-workspace}:/workspace/user:rw
+      # Optional local asset pack (docs/china_mirror.md)
+      - ${LOCAL_ASSETS_PATH:-/dev/null}:/isaac-assets:ro

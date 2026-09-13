@@ -1,0 +1,11 @@
+# Route B/D (pip). Install IN THIS ORDER inside a fresh python 3.11 venv. Do not let anything upgrade torch.
+# 1) pip install --upgrade pip
+# 2) pip install -r requirements-lock.txt --index-url https://download.pytorch.org/whl/cu128 --extra-index-url https://pypi.org/simple --extra-index-url https://pypi.nvidia.com
+torch==2.7.0
+torchvision==0.22.0
+isaacsim[all,extscache]==5.1.0
+# Known-good pins from IsaacLab discussion #5373 (Windows DLL / import crash fixes); harmless on Linux
+tensordict==0.11.0
+h5py==3.11.0
+# 3) git clone https://github.com/isaac-sim/IsaacLab.git --branch v2.3.2 && cd IsaacLab && ./isaaclab.sh --install rsl_rl
+# 4) pip install --force-reinstall --no-deps h5py==3.11.0   (isaaclab --install may bump it back)

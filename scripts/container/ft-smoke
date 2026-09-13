@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Runs inside the container. Proves Isaac Sim boots, Isaac Lab imports, PhysX trains on the GPU.
+set -euo pipefail
+cd "${ISAACLAB_PATH}"
+echo "[1/3] python + torch + cuda"
+cat > /tmp/_ftcheck.py <<'PY'
+import torch, isaacsim
+print("torch", torch.__version__, "cuda_available", torch.cuda.is_available(),
+      "device", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "NONE")
+assert torch.cuda.is_available(), "CUDA not visible inside container"
+PY
+./isaaclab.sh -p /tmp/_ftcheck.py
+echo "[2/3] empty scene (headless)"
+timeout 300 ./isaaclab.sh -p /opt/fasttrack/tools/ft_empty_scene.py --headless
+echo "[3/3] cartpole PPO, 64 envs, 100 iterations"
+timeout 1200 ./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task Isaac-Cartpole-v0 --headless --num_envs 64 --max_iterations 100
+echo "SMOKE PASS"
